@@ -28,6 +28,8 @@ export interface Itinerary {
   tagline: string;
   destination: string;
   durationDays: number;
+  startDate?: string;
+  seasonalContext?: string;
   travelStyle: string;
   estimatedTotalCost: string;
   highlights: string[];
@@ -41,5 +43,6 @@ export interface PlannerState {
   startingCity: string;
   budget: string;
   days: string;
+  startDate: string;
   travelStyle: string;
 }

@@ -40,8 +40,8 @@ function parseActivityTime(time: string) {
   return { hours, minutes };
 }
 
-function eventDateFor(dayIndex: number, activity: Activity) {
-  const date = new Date();
+function eventDateFor(dayIndex: number, activity: Activity, tripStartDate?: string) {
+  const date = tripStartDate ? new Date(`${tripStartDate}T00:00:00`) : new Date();
   date.setHours(0, 0, 0, 0);
   date.setDate(date.getDate() + dayIndex);
 
@@ -55,7 +55,7 @@ export function generateItineraryIcs(itinerary: Itinerary) {
   const now = formatIcsDate(new Date());
   const events = itinerary.days.flatMap((day, dayIndex) =>
     day.activities.map((activity, activityIndex) => {
-      const startsAt = eventDateFor(dayIndex, activity);
+      const startsAt = eventDateFor(dayIndex, activity, itinerary.startDate);
       const endsAt = new Date(startsAt.getTime() + DEFAULT_EVENT_HOURS * 60 * 60 * 1000);
       const coordinates = typeof activity.latitude === "number" && typeof activity.longitude === "number"
         ? `${activity.latitude};${activity.longitude}`

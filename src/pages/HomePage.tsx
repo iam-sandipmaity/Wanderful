@@ -40,48 +40,6 @@ export default function HomePage() {
 
   return (
     <>
-{/* HUD FLOATING READOUT STATS */}
-                  <div className="absolute inset-0 pointer-events-none hidden lg:block overflow-visible">
-                    {/* HUD 1 */}
-                    <div className="absolute top-[8%] left-[-15%] animate-float">
-                      <div className="px-4 py-3 rounded-2xl liquid-glass backdrop-blur-md text-left flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-cyan-400/10 flex items-center justify-center text-cyan-400 border border-cyan-400/20">
-                          <MapPin className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-mono text-white/40 tracking-wider">CONNECTIVITY</p>
-                          <p className="text-xs font-bold leading-none mt-0.5">120+ destinations</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* HUD 2 */}
-                    <div className="absolute bottom-[20%] left-[-11%] animate-float-reverse">
-                      <div className="px-4 py-3 rounded-2xl liquid-glass backdrop-blur-md text-left flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-amber-400/10 flex items-center justify-center text-amber-400 border border-amber-400/20">
-                          <Sparkles className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-mono text-white/40 tracking-wider">GEN ENGINE</p>
-                          <p className="text-xs font-bold leading-none mt-0.5">Plans in under 60 sec</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* HUD 3 */}
-                    <div className="absolute top-[35%] right-[-15%] animate-float">
-                      <div className="px-4 py-3 rounded-2xl liquid-glass backdrop-blur-md text-left flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-purple-400/10 flex items-center justify-center text-purple-400 border border-purple-400/20">
-                          <Layers className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-mono text-white/40 tracking-wider">OS PARALLEL</p>
-                          <p className="text-xs font-bold leading-none mt-0.5">Preference Adaptive</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
                   {/* FLOATING TYPOGRAPHY ACCENT FOR TRAVEL OS */}
                   <div className="mb-4">
                     <span 
@@ -104,12 +62,12 @@ export default function HomePage() {
                   <form 
                     id="planner-anchor-card"
                     onSubmit={handleGenerateTrip}
-                    className="w-full max-w-[860px] liquid-glass rounded-[32px] p-5 mb-10 text-left relative focus-within:ring-2 focus-within:ring-white/20 transition-all duration-300"
+                    className="w-full max-w-6xl liquid-glass rounded-[32px] p-5 mb-10 text-left relative focus-within:ring-2 focus-within:ring-white/20 transition-all duration-300"
                   >
-                    <div className="flex flex-col md:flex-row items-center gap-3">
+                    <div className="flex flex-col md:flex-row md:flex-wrap 2xl:flex-nowrap items-stretch md:items-end gap-3">
                       
                       {/* starting city */}
-                      <div className="w-full md:flex-1 relative">
+                      <div className="w-full md:flex-1 md:min-w-[210px] relative">
                         <label className="block text-[8px] font-mono tracking-widest text-white/40 uppercase mb-1 px-1">Starting City</label>
                         <div className="relative">
                           <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40">
@@ -127,7 +85,7 @@ export default function HomePage() {
                       </div>
 
                       {/* Budget & Currency selection */}
-                      <div className="w-full md:w-56 flex gap-1.5 items-end relative">
+                      <div className="w-full md:w-56 md:shrink-0 flex gap-1.5 items-end relative">
                         <div className="flex-1 min-w-0">
                           <label className="block text-[8px] font-mono tracking-widest text-white/40 uppercase mb-1 px-1">Budget Goal</label>
                           <div className="relative">
@@ -159,8 +117,24 @@ export default function HomePage() {
                         </div>
                       </div>
 
+                      {/* Travel Date selection */}
+                      <div className="w-full md:w-44 md:shrink-0 relative">
+                        <label className="block text-[8px] font-mono tracking-widest text-white/40 uppercase mb-1 px-1">Travel Date</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">
+                            <Calendar className="w-3.5 h-3.5" />
+                          </span>
+                          <input
+                            type="date"
+                            value={planner.startDate}
+                            onChange={(e) => setPlanner({ ...planner, startDate: e.target.value })}
+                            className="w-full bg-black border border-white/5 rounded-2xl pl-9 pr-3 py-2.5 text-xs text-white focus:outline-none focus:border-white/30 transition-all cursor-pointer"
+                          />
+                        </div>
+                      </div>
+
                       {/* Trip Length days */}
-                      <div className="w-full md:w-28 relative">
+                      <div className="w-full md:w-32 md:shrink-0 relative">
                         <label className="block text-[8px] font-mono tracking-widest text-white/40 uppercase mb-1 px-1">Trip length</label>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">
@@ -182,7 +156,7 @@ export default function HomePage() {
                       </div>
 
                       {/* Style drop */}
-                      <div className="w-full md:w-36 relative">
+                      <div className="w-full md:w-40 md:shrink-0 relative">
                         <label className="block text-[8px] font-mono tracking-widest text-white/40 uppercase mb-1 px-1">Travel Style</label>
                         <div className="relative">
                           <span className="absolute left-3.2 top-1/2 -translate-y-1/2 text-white/40">
@@ -205,7 +179,7 @@ export default function HomePage() {
                       </div>
 
                       {/* Submission */}
-                      <div className="w-full md:w-auto pt-3 md:pt-4">
+                      <div className="w-full md:w-auto md:shrink-0 pt-3 md:pt-4">
                         <button
                           type="submit"
                           className="w-full md:w-auto px-6 py-2.5 bg-white text-black font-semibold rounded-full hover:scale-105 active:scale-95 transition-all text-xs font-mono tracking-wider cursor-pointer"

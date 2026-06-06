@@ -224,6 +224,7 @@ export default function WanderfulShell() {
     startingCity: "",
     budget: "",
     days: "3",
+    startDate: "",
     travelStyle: "Adventure"
   });
 
@@ -486,6 +487,7 @@ export default function WanderfulShell() {
           startingCity: planner.startingCity,
           budget: planner.budget,
           days: planner.days,
+          startDate: planner.startDate,
           travelStyle: planner.travelStyle,
           userApiKey: activeApiKey.trim() || undefined,
           aiProvider: aiProvider,
@@ -747,6 +749,30 @@ export default function WanderfulShell() {
         </div>
       </header>
 
+      {/* MOBILE NAVIGATION BAR */}
+      <nav className="fixed top-[73px] left-0 right-0 z-40 md:hidden px-4 py-2 border-b border-white/5 bg-black/45 backdrop-blur-xl overflow-x-auto">
+        <div className="flex items-center gap-2 min-w-max">
+          {["DISCOVER", "HOW IT WORKS", "ITINERARIES", "GUIDES"].map((nav) => (
+            <button
+              key={nav}
+              onClick={() => {
+                navigateTo(navToRoute(nav));
+                if (nav === "DISCOVER") {
+                  setTimeout(triggerScrollToPlanner, 100);
+                }
+              }}
+              className={`text-[10px] font-mono font-medium tracking-[0.12em] px-3.5 py-1.5 rounded-full transition-all duration-300 border ${
+                activeNav === nav
+                  ? "bg-white/10 text-white border-white/10"
+                  : "bg-white/[0.02] border-white/5 text-white/60"
+              }`}
+            >
+              {nav}
+            </button>
+          ))}
+        </div>
+      </nav>
+
       {/* FLYOUT SETTINGS DRAWER FOR API KEY */}
       <AnimatePresence>
         {showApiKeySetting && (
@@ -875,7 +901,7 @@ export default function WanderfulShell() {
       </AnimatePresence>
 
       {/* APP WORKSPACE FRAME CONTAINER */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center pt-28 px-4 md:px-10">
+      <div className="relative z-10 flex-1 flex flex-col justify-center pt-40 md:pt-28 px-4 md:px-10">
 
         <AnimatePresence mode="wait">
           
@@ -887,7 +913,7 @@ export default function WanderfulShell() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 1 }}
-              className="max-w-5xl mx-auto w-full flex flex-col items-center text-center relative"
+              className="max-w-7xl mx-auto w-full flex flex-col items-center text-center relative"
             >
               
               {routePath === "/" && <HomePage />}

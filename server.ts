@@ -43,7 +43,7 @@ async function startServer() {
   // API: Plan Travel Journey
   app.post("/api/generate-itinerary", async (req, res) => {
     try {
-      const { startingCity, budget, days, travelStyle, userApiKey, currency, aiProvider } = req.body;
+      const { startingCity, budget, days, startDate, travelStyle, userApiKey, currency, aiProvider } = req.body;
 
       if (!startingCity || !days || !travelStyle) {
         return res.status(400).json({ error: "Missing required starting parameters" });
@@ -52,15 +52,30 @@ async function startServer() {
       const activeProvider = aiProvider || "gemini";
       const travelDaysCount = Math.min(Math.max(parseInt(days) || 3, 1), 10);
       const targetCurrency = currency || "USD";
+      const travelStartDate = typeof startDate === "string" && startDate.trim() ? startDate.trim() : "";
+      const travelTimingContext = (() => {
+        if (!travelStartDate) {
+          return "No fixed travel date supplied; use generally balanced, year-round recommendations.";
+        }
+
+        const date = new Date(`${travelStartDate}T12:00:00`);
+        if (Number.isNaN(date.getTime())) {
+          return `Requested travel date: ${travelStartDate}. Interpret this date carefully and adapt to the destination's local season.`;
+        }
+
+        const monthName = new Intl.DateTimeFormat("en-US", { month: "long" }).format(date);
+        return `Requested travel start date: ${travelStartDate} (${monthName}). Infer the destination's local season for this month and adapt all recommendations accordingly.`;
+      })();
 
       const prompt = `You are the master engine of Wanderful, a futuristic high-end personalized travel OS.
 Generate a premium, cinematic, ultra-detailed travel itinerary based on these variables:
 - Starting City: ${startingCity}
 - Budget Goal: ${budget || "flexible"} (All calculated costs must be formatted clearly in the specified currency: ${targetCurrency})
 - Duration: ${travelDaysCount} Days
+- Travel Timing: ${travelTimingContext}
 - Travel Style / Sentiment: ${travelStyle}
 
-Create an experience tailored deeply to this travel style and Starting City. Realistically estimate costs relative to local rates. All text must speak in a highly refined, cinematic travel curator tone. Include real-world approximate latitude and longitude coordinates for every single activity location so they can be mapped on Leaflet.`;
+Create an experience tailored deeply to this travel style, Starting City, and travel timing. Date/month matters: if the selected month implies summer, winter, monsoon, shoulder season, festival pressure, heat risk, snow risk, short daylight, or high/low tourism season at the destination, reflect that in pacing, activity choices, packing, safety guidance, lodging/transport notes, and cost estimates. Realistically estimate costs relative to local rates. All text must speak in a highly refined, cinematic travel curator tone. Include real-world approximate latitude and longitude coordinates for every single activity location so they can be mapped on Leaflet.`;
 
       const jsonFormatSpecs = `
 Structure your response as a valid JSON object matching this schema:
@@ -324,6 +339,11 @@ Ensure your response is raw JSON and contains exactly these fields.`;
         });
 
         parsedData = JSON.parse(response.text || "{}");
+      }
+
+      if (parsedData && typeof parsedData === "object") {
+        parsedData.startDate = travelStartDate || undefined;
+        parsedData.seasonalContext = travelTimingContext;
       }
 
       return res.json(parsedData);

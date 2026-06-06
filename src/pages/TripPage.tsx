@@ -148,6 +148,11 @@ export default function TripPage() {
                     <span className="px-2 py-0.5 rounded bg-white/10 text-white/80 text-[9px] font-mono tracking-wider uppercase">
                       {itinerary.durationDays} DAYS INCLUDED
                     </span>
+                    {itinerary.startDate && (
+                      <span className="px-2 py-0.5 rounded bg-white/10 text-white/80 text-[9px] font-mono tracking-wider uppercase">
+                        START {new Date(`${itinerary.startDate}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                      </span>
+                    )}
                   </div>
 
                   <h2 className="text-2xl md:text-4xl font-semibold tracking-tight uppercase font-display mb-2">
