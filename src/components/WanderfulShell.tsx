@@ -12,6 +12,7 @@ import {
   Sparkles, 
   Check, 
   Loader2, 
+  Menu,
   Printer, 
   Briefcase, 
   ShieldCheck, 
@@ -240,6 +241,7 @@ export default function WanderfulShell() {
     groq: ""
   });
   const [showApiKeySetting, setShowApiKeySetting] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const clearPendingPlannerScroll = () => {
     if (plannerScrollTimeoutRef.current !== null) {
@@ -255,6 +257,7 @@ export default function WanderfulShell() {
       window.history.pushState({}, "", normalizedPath);
     }
     setRoutePath(normalizedPath);
+    setShowMobileMenu(false);
     if (options.scrollTop !== false) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -729,6 +732,18 @@ export default function WanderfulShell() {
         {/* Right: Key config and Get Started */}
         <div className="flex items-center gap-4">
           <button
+            onClick={() => setShowMobileMenu(prev => !prev)}
+            title="Open navigation"
+            className={`md:hidden p-2 rounded-full border text-xs transition-all cursor-pointer ${
+              showMobileMenu
+                ? "bg-white/10 border-white/20 text-white"
+                : "bg-white/5 border-white/10 text-white/70 hover:text-white hover:bg-white/10"
+            }`}
+          >
+            <Menu className="w-3.5 h-3.5" />
+          </button>
+
+          <button
             onClick={() => setShowApiKeySetting(!showApiKeySetting)}
             title="Configure Custom Keys"
             className={`p-2 rounded-full border text-xs transition-all cursor-pointer ${
@@ -749,29 +764,38 @@ export default function WanderfulShell() {
         </div>
       </header>
 
-      {/* MOBILE NAVIGATION BAR */}
-      <nav className="fixed top-[73px] left-0 right-0 z-40 md:hidden px-4 py-2 border-b border-white/5 bg-black/45 backdrop-blur-xl overflow-x-auto">
-        <div className="flex items-center gap-2 min-w-max">
-          {["DISCOVER", "HOW IT WORKS", "ITINERARIES", "GUIDES"].map((nav) => (
-            <button
-              key={nav}
-              onClick={() => {
-                navigateTo(navToRoute(nav));
-                if (nav === "DISCOVER") {
-                  setTimeout(triggerScrollToPlanner, 100);
-                }
-              }}
-              className={`text-[10px] font-mono font-medium tracking-[0.12em] px-3.5 py-1.5 rounded-full transition-all duration-300 border ${
-                activeNav === nav
-                  ? "bg-white/10 text-white border-white/10"
-                  : "bg-white/[0.02] border-white/5 text-white/60"
-              }`}
-            >
-              {nav}
-            </button>
-          ))}
-        </div>
-      </nav>
+      {/* MOBILE HAMBURGER MENU */}
+      <AnimatePresence>
+        {showMobileMenu && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="fixed top-[76px] left-4 right-4 z-40 md:hidden liquid-glass rounded-2xl border border-white/10 p-2"
+          >
+            <div className="grid grid-cols-1 gap-1">
+              {["DISCOVER", "HOW IT WORKS", "ITINERARIES", "GUIDES"].map((nav) => (
+                <button
+                  key={nav}
+                  onClick={() => {
+                    navigateTo(navToRoute(nav));
+                    if (nav === "DISCOVER") {
+                      setTimeout(triggerScrollToPlanner, 100);
+                    }
+                  }}
+                  className={`w-full text-left text-[11px] font-mono font-medium tracking-[0.12em] px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                    activeNav === nav
+                      ? "bg-white/10 text-white"
+                      : "text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  {nav}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* FLYOUT SETTINGS DRAWER FOR API KEY */}
       <AnimatePresence>
@@ -901,7 +925,7 @@ export default function WanderfulShell() {
       </AnimatePresence>
 
       {/* APP WORKSPACE FRAME CONTAINER */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center pt-40 md:pt-28 px-4 md:px-10">
+      <div className="relative z-10 flex-1 flex flex-col justify-center pt-28 px-4 md:px-10">
 
         <AnimatePresence mode="wait">
           
