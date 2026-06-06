@@ -498,7 +498,8 @@ export default function WanderfulShell() {
         })
       });
 
-      const data = await res.json();
+      const responseText = await res.text();
+      const data = responseText ? JSON.parse(responseText) : {};
 
       if (!res.ok) {
         throw new Error(data.error || "Generation engine was unable to synthesize the path.");

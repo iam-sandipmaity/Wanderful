@@ -44,7 +44,7 @@ export default function HomePage() {
                   <div className="mb-4">
                     <span 
                       className="inline-block text-[10px] font-mono tracking-[0.25em] text-white/70 uppercase select-none rotate-[-4deg] border-b border-white/20 pb-1"
-                      style={{ fontFamily: "'Dirtyline', sans-serif" }}
+                      style={{ fontFamily: "'Instrument Serif', serif" }}
                     >
                       personalized travel OS
                     </span>
