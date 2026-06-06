@@ -1,34 +1,37 @@
 # Wanderful Travel OS
 
-Wanderful is a premium AI travel planning app that generates cinematic, practical trip itineraries with mapped activities, budget breakdowns, packing guidance, weather context, calendar export, printable dossiers, and offline-aware trip caching.
+<p align="center">
+  <img src="public/preview.png" alt="Wanderful Travel OS preview" width="100%" />
+</p>
 
-The app is built as a React/Vite frontend served through a small Express backend. The backend handles itinerary generation through Gemini by default, with optional support for OpenAI, Anthropic, and Groq.
+Wanderful is a premium AI travel planning app for generating cinematic, practical, map-ready travel itineraries. It combines AI itinerary generation, seasonal planning, mapped activities, weather context, printable dossiers, calendar export, curated travel archives, and offline-aware trip caching in one polished travel workspace.
 
-## Features
+## Highlights
 
-- AI-generated multi-day travel itineraries with real-world activity coordinates
-- Pre-curated luxury, adventure, food, and relaxed travel templates
-- Separate app routes for Discover, How It Works, Itineraries, Guides, and Trip dashboard
+- AI-generated multi-day itineraries with real-world latitude and longitude for every activity
+- Seasonal planning based on selected travel date and destination timing
+- Budget-aware planning with selectable currency
+- Pre-curated itinerary archive for instant demo journeys
+- Cultural, safety, finance, and logistics guide pages
 - Interactive OpenStreetMap/Leaflet activity maps
-- Local destination weather forecast through Open-Meteo
-- Printable itinerary dossier for PDF export
-- `.ics` calendar export for Google Calendar and Apple Calendar
-- Trip progress indicator in the dashboard
-- Offline status indicator and local itinerary caching
+- Local destination weather forecast using Open-Meteo
+- Printable PDF-friendly itinerary dossier
+- `.ics` export for Google Calendar and Apple Calendar
+- Offline state indicator and local itinerary caching
 - Service worker for app-shell caching
-- Optional in-browser provider key selection for Gemini, OpenAI, Anthropic, and Groq
+- Bring-your-own-key support for Gemini, OpenAI, Anthropic, and Groq
 
-## Routes
+## Live App Structure
 
-| Route | Purpose |
+| Route | Description |
 | --- | --- |
-| `/` | Discover/home planner |
-| `/how-it-works` | System and workflow overview |
-| `/itineraries` | Pre-curated itinerary archive |
-| `/guides` | Cultural, safety, logistics, and travel guides |
+| `/` | Discover planner and trip generation entry |
+| `/how-it-works` | Product architecture and planning workflow |
+| `/itineraries` | Pre-curated travel archive |
+| `/guides` | Cultural, safety, wellness, and logistics guides |
 | `/trip` | Generated or loaded itinerary dashboard |
 
-`vercel.json` includes an SPA fallback rewrite so refreshing any route serves `index.html`.
+The app includes a Vercel SPA fallback rewrite, so direct refreshes on client routes continue to serve the React app.
 
 ## Tech Stack
 
@@ -36,11 +39,11 @@ The app is built as a React/Vite frontend served through a small Express backend
 - Vite 6
 - TypeScript
 - Tailwind CSS 4
-- Express
-- Leaflet
-- Motion
-- GSAP
-- Lucide React
+- Express for local development server
+- Vercel serverless API route for production itinerary generation
+- Leaflet for maps
+- Motion and GSAP for interaction and animation
+- Lucide React icons
 - Google GenAI SDK
 - Open-Meteo forecast API
 
@@ -51,7 +54,7 @@ The app is built as a React/Vite frontend served through a small Express backend
 - Node.js 22 or newer recommended
 - npm
 
-### Install
+### Install Dependencies
 
 ```bash
 npm install
@@ -59,13 +62,13 @@ npm install
 
 ### Configure Environment
 
-Create a local `.env` file from the example:
+Create `.env` from the example file:
 
 ```bash
 cp .env.example .env
 ```
 
-Then add at least one AI provider key:
+Add at least one provider key:
 
 ```env
 GEMINI_API_KEY="your_gemini_key"
@@ -75,7 +78,7 @@ GROQ_API_KEY=""
 APP_URL="http://localhost:3000"
 ```
 
-Gemini is the default provider. Users can also paste provider keys inside the app settings drawer at runtime.
+Gemini is the default provider. Users can also paste provider keys inside the app's settings drawer at runtime.
 
 ### Run Locally
 
@@ -83,7 +86,7 @@ Gemini is the default provider. Users can also paste provider keys inside the ap
 npm run dev
 ```
 
-The app runs at:
+Open:
 
 ```text
 http://localhost:3000
@@ -93,17 +96,23 @@ http://localhost:3000
 
 | Command | Description |
 | --- | --- |
-| `npm run dev` | Start the Express + Vite development server |
-| `npm run build` | Build the frontend and bundle the server |
+| `npm run dev` | Start the local Express + Vite development server |
+| `npm run build` | Build the Vite client and bundle the local server |
 | `npm run start` | Start the production server from `dist/server.cjs` |
 | `npm run lint` | Run TypeScript checks with `tsc --noEmit` |
 | `npm run clean` | Remove generated build output |
 
-## Deployment
+## Deployment Notes
 
 ### Vercel
 
-The repository includes:
+Production API generation is handled by:
+
+```text
+api/generate-itinerary.ts
+```
+
+Client-side routing is handled by `vercel.json`:
 
 ```json
 {
@@ -116,9 +125,7 @@ The repository includes:
 }
 ```
 
-This prevents `404: NOT_FOUND` on direct route refreshes such as `/how-it-works` or `/guides`.
-
-Set provider keys in your deployment environment variables:
+Set these environment variables in Vercel as needed:
 
 - `GEMINI_API_KEY`
 - `OPENAI_API_KEY`
@@ -129,6 +136,12 @@ Set provider keys in your deployment environment variables:
 ## Project Structure
 
 ```text
+api/
+  generate-itinerary.ts
+public/
+  favicon.svg
+  preview.png
+  sw.js
 src/
   components/
     MapView.tsx
@@ -150,31 +163,53 @@ src/
   data.ts
   types.ts
 server.ts
-public/sw.js
 vercel.json
 ```
 
-## Notes
+## Feature Details
 
-- Weather data is fetched from Open-Meteo using the first activity with valid latitude and longitude.
-- Calendar export creates a downloadable `.ics` file from itinerary activities.
-- Offline support caches the app shell and stores the latest itinerary snapshot in local storage.
-- Generated itineraries depend on the selected AI provider and key availability.
+### AI Itinerary Generation
+
+The planner sends the starting city, budget, currency, travel date, trip length, travel style, and selected AI provider to the itinerary API. The API asks the model to return structured JSON with coordinates, activities, costs, lodging notes, packing guidance, and safety advice.
+
+### Seasonal Timing
+
+The travel date is passed into the model prompt so it can adjust recommendations for heat, winter, monsoon, festivals, shoulder season, daylight, and expected tourism pressure.
+
+### Calendar Export
+
+The trip dashboard generates a downloadable `.ics` file from itinerary activities. When a travel start date is selected, calendar events are anchored to that date.
+
+### Weather
+
+Weather data is fetched from Open-Meteo using the first activity that includes valid coordinates. Temperatures are shown in Celsius and wind speed in km/h.
+
+### Offline Support
+
+The service worker caches the app shell. The latest itinerary is saved in local storage so users can continue viewing core trip details when offline.
 
 ## Troubleshooting
 
-### Route refresh shows `404: NOT_FOUND`
+### Direct route refresh shows `404: NOT_FOUND`
 
-Ensure `vercel.json` is deployed with the SPA rewrite. Vercel must serve `index.html` for client-side routes.
+Make sure `vercel.json` is deployed. It rewrites client-side routes back to `index.html`.
 
-### `Port 3000 is already in use`
+### `/api/generate-itinerary` returns `405`
 
-Stop the existing dev server or change the port in `server.ts`.
+Make sure the Vercel serverless function in `api/generate-itinerary.ts` is included in the deployment.
 
 ### AI generation fails
 
-Check that the selected provider has a valid API key either in `.env` or in the app settings drawer.
+Confirm that the selected provider has a valid key in environment variables or in the in-app settings drawer.
 
 ### Weather does not appear
 
-The itinerary must include activity coordinates. Weather is skipped when no mapped activity is available or while offline.
+Weather requires activity coordinates and an active network connection.
+
+### Port `3000` is already in use
+
+Stop the existing dev server, or change the port inside `server.ts`.
+
+## Source
+
+GitHub: <https://github.com/iam-sandipmaity/Wanderful>
