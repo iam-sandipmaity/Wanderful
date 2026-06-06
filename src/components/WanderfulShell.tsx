@@ -990,15 +990,26 @@ export default function WanderfulShell() {
             <span>Designed for boundless journeys</span>
           </div>
 
-          <div>
-            MADE BY{" "}
-            <a 
-              href="https://sandipmaity.me" 
-              target="_blank" 
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <span>
+              MADE BY{" "}
+              <a 
+                href="https://sandipmaity.me" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white/60 hover:text-cyan-400 transition-all font-semibold hover:border-b border-cyan-400/30 pb-0.5 tracking-widest"
+              >
+                SANDIPMAITY.ME
+              </a>
+            </span>
+            <span className="text-white/10">•</span>
+            <a
+              href="https://github.com/iam-sandipmaity/Wanderful"
+              target="_blank"
               rel="noopener noreferrer"
               className="text-white/60 hover:text-cyan-400 transition-all font-semibold hover:border-b border-cyan-400/30 pb-0.5 tracking-widest"
             >
-              SANDIPMAITY.ME
+              SOURCE ON GITHUB
             </a>
           </div>
         </div>
