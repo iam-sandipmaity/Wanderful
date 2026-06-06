@@ -962,8 +962,8 @@ export default function WanderfulShell() {
       </div>
 
       {/* FOOTER METRICS AND PLATFORM ACKNOWLEDGEMENT */}
-      <footer className="relative z-10 px-6 mt-16 pt-8 pb-12 border-t border-white/5 max-w-4xl mx-auto w-full flex flex-col gap-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="relative z-10 px-6 md:px-10 mt-16 pt-8 pb-12 border-t border-white/5 w-full flex flex-col gap-6">
+        <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <span className="text-[10px] font-mono text-white/35 tracking-widest uppercase">
             WANDERFUL TRAVEL OS © 2026. ALL RIGHTS RESERVED.
           </span>
@@ -985,7 +985,7 @@ export default function WanderfulShell() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-mono text-white/30 tracking-wider pt-4 border-t border-white/[0.02]">
+        <div className="w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-mono text-white/30 tracking-wider pt-4 border-t border-white/[0.08]">
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
             <span>Designed for boundless journeys</span>
