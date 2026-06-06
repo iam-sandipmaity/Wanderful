@@ -207,6 +207,7 @@ function navToRoute(nav: string) {
 export default function WanderfulShell() {
   const [routePath, setRoutePath] = useState(() => normalizeRoutePath(window.location.pathname));
   const activeNav = routeToNav(routePath);
+  const plannerScrollTimeoutRef = useRef<number | null>(null);
 
   // Filter States for high-fidelity views
   const [curatedStyle, setCuratedStyle] = useState("All");
@@ -239,13 +240,23 @@ export default function WanderfulShell() {
   });
   const [showApiKeySetting, setShowApiKeySetting] = useState(false);
 
-  const navigateTo = (path: string) => {
+  const clearPendingPlannerScroll = () => {
+    if (plannerScrollTimeoutRef.current !== null) {
+      window.clearTimeout(plannerScrollTimeoutRef.current);
+      plannerScrollTimeoutRef.current = null;
+    }
+  };
+
+  const navigateTo = (path: string, options: { scrollTop?: boolean } = {}) => {
+    clearPendingPlannerScroll();
     const normalizedPath = normalizeRoutePath(path);
     if (window.location.pathname !== normalizedPath) {
       window.history.pushState({}, "", normalizedPath);
     }
     setRoutePath(normalizedPath);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (options.scrollTop !== false) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   useEffect(() => {
@@ -584,17 +595,26 @@ export default function WanderfulShell() {
     setPackedRegistry(prev => ({ ...prev, item: !prev[item] }));
   };
 
-  const triggerScrollToPlanner = () => {
-    if (routePath !== "/") {
-      navigateTo("/");
-      setTimeout(triggerScrollToPlanner, 100);
-      return;
-    }
-
+  const scrollPlannerIntoView = () => {
     const el = document.getElementById("planner-anchor-card");
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
+  };
+
+  const triggerScrollToPlanner = () => {
+    clearPendingPlannerScroll();
+
+    if (window.location.pathname !== "/") {
+      navigateTo("/", { scrollTop: false });
+      plannerScrollTimeoutRef.current = window.setTimeout(() => {
+        plannerScrollTimeoutRef.current = null;
+        scrollPlannerIntoView();
+      }, 180);
+      return;
+    }
+
+    scrollPlannerIntoView();
   };
 
   const contextValue = {
