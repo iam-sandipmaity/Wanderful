@@ -1,0 +1,6 @@
+{
+  "name": "Wanderful",
+  "description": "An AI-powered premium travel OS for personalized journeys built around your vibe, budget, and pace.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
