@@ -17,6 +17,49 @@ function cleanAndParseJSON(responseText: string) {
   return JSON.parse(cleaned.trim());
 }
 
+function enforceItineraryDensity(
+  parsedData: any,
+  expectedDays: number,
+  expectedActivitiesPerDay: number
+) {
+  if (!parsedData || typeof parsedData !== "object") {
+    throw new Error("AI returned an empty itinerary. Please try generating again.");
+  }
+
+  if (!Array.isArray(parsedData.days)) {
+    throw new Error("AI returned an itinerary without day plans. Please try generating again.");
+  }
+
+  if (parsedData.days.length < expectedDays) {
+    throw new Error(
+      `AI returned only ${parsedData.days.length} day plans; requested ${expectedDays}. Please try generating again.`
+    );
+  }
+
+  if (parsedData.days.length > expectedDays) {
+    parsedData.days = parsedData.days.slice(0, expectedDays);
+  }
+
+  parsedData.days.forEach((day: any, index: number) => {
+    if (!Array.isArray(day.activities)) {
+      throw new Error(`AI returned Day ${index + 1} without activities. Please try generating again.`);
+    }
+
+    if (day.activities.length < expectedActivitiesPerDay) {
+      throw new Error(
+        `AI returned only ${day.activities.length} activities for Day ${index + 1}; requested ${expectedActivitiesPerDay}. Please try again or choose fewer daily stops.`
+      );
+    }
+
+    if (day.activities.length > expectedActivitiesPerDay) {
+      day.activities = day.activities.slice(0, expectedActivitiesPerDay);
+    }
+  });
+
+  parsedData.durationDays = expectedDays;
+  return parsedData;
+}
+
 function buildTravelTimingContext(startDate: unknown) {
   const travelStartDate = typeof startDate === "string" && startDate.trim() ? startDate.trim() : "";
 
@@ -48,7 +91,7 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const { startingCity, budget, days, startDate, travelStyle, userApiKey, currency, aiProvider } = req.body || {};
+    const { startingCity, budget, days, activitiesPerDay, startDate, travelStyle, userApiKey, currency, aiProvider } = req.body || {};
 
     if (!startingCity || !days || !travelStyle) {
       return res.status(400).json({ error: "Missing required starting parameters" });
@@ -56,6 +99,7 @@ export default async function handler(req: any, res: any) {
 
     const activeProvider = aiProvider || "gemini";
     const travelDaysCount = Math.min(Math.max(parseInt(days) || 3, 1), 10);
+    const activitiesPerDayCount = Math.min(Math.max(parseInt(activitiesPerDay) || 4, 3), 6);
     const targetCurrency = currency || "USD";
     const { travelStartDate, travelTimingContext } = buildTravelTimingContext(startDate);
 
@@ -64,10 +108,18 @@ Generate a premium, cinematic, ultra-detailed travel itinerary based on these va
 - Starting City: ${startingCity}
 - Budget Goal: ${budget || "flexible"} (All calculated costs must be formatted clearly in the specified currency: ${targetCurrency})
 - Duration: ${travelDaysCount} Days
+- Daily Activity Load: ${activitiesPerDayCount} planned stops per day
 - Travel Timing: ${travelTimingContext}
 - Travel Style / Sentiment: ${travelStyle}
 
-Create an experience tailored deeply to this travel style, Starting City, and travel timing. Date/month matters: if the selected month implies summer, winter, monsoon, shoulder season, festival pressure, heat risk, snow risk, short daylight, or high/low tourism season at the destination, reflect that in pacing, activity choices, packing, safety guidance, lodging/transport notes, and cost estimates. Realistically estimate costs relative to local rates. All text must speak in a highly refined, cinematic travel curator tone. Include real-world approximate latitude and longitude coordinates for every single activity location so they can be mapped on Leaflet.`;
+Create an experience tailored deeply to this travel style, Starting City, and travel timing. Date/month matters: if the selected month implies summer, winter, monsoon, shoulder season, festival pressure, heat risk, snow risk, short daylight, or high/low tourism season at the destination, reflect that in pacing, activity choices, packing, safety guidance, lodging/transport notes, and cost estimates. Realistically estimate costs relative to local rates. All text must speak in a highly refined, cinematic travel curator tone. Include real-world approximate latitude and longitude coordinates for every single activity location so they can be mapped on Leaflet.
+
+Activity density requirements:
+- Return exactly ${travelDaysCount} day objects in the "days" array.
+- Every day must include exactly ${activitiesPerDayCount} activity objects.
+- Use this daily rhythm as the base: morning anchor, lunch or food stop, afternoon cultural/nature/local experience, and evening dinner/viewpoint/wind-down.
+- If ${activitiesPerDayCount} is 5 or 6, add realistic late-morning and/or late-afternoon stops without making the day feel rushed.
+- Do not collapse a day into only one or two activities.`;
 
     const jsonFormatSpecs = `
 Structure your response as a valid JSON object matching this schema:
@@ -86,10 +138,37 @@ Structure your response as a valid JSON object matching this schema:
       "title": "Charming title of the day's theme",
       "activities": [
         {
-          "time": "e.g. Morning, Afternoon",
-          "title": "Activity name",
+          "time": "Morning",
+          "title": "Morning anchor activity",
+          "description": "Evocative cinematic details describing what to see, smell, or experience",
+          "locationName": "Specific landmark, neighborhood, trailhead, museum, temple, lookout point, etc.",
+          "cost": "Price estimation in ${targetCurrency}",
+          "latitude": 35.0000,
+          "longitude": 135.0000
+        },
+        {
+          "time": "Lunch",
+          "title": "Local lunch or food stop",
+          "description": "Evocative culinary details with realistic pacing and local context",
+          "locationName": "Specific restaurant, market, cafe, food hall, or dining district",
+          "cost": "Price estimation in ${targetCurrency}",
+          "latitude": 35.0000,
+          "longitude": 135.0000
+        },
+        {
+          "time": "Afternoon",
+          "title": "Afternoon cultural, nature, or neighborhood experience",
           "description": "Evocative cinematic details describing what to see, smell, or experience",
           "locationName": "Specific restaurant, temple, lookout point, etc.",
+          "cost": "Price estimation in ${targetCurrency}",
+          "latitude": 35.0000,
+          "longitude": 135.0000
+        },
+        {
+          "time": "Evening",
+          "title": "Evening dinner, viewpoint, show, or wind-down",
+          "description": "Evocative cinematic details describing how to close the day memorably",
+          "locationName": "Specific restaurant, viewpoint, waterfront, theater, night market, or district",
           "cost": "Price estimation in ${targetCurrency}",
           "latitude": 35.0000,
           "longitude": 135.0000
@@ -107,7 +186,7 @@ Structure your response as a valid JSON object matching this schema:
   },
   "localSafetyAndPaceTips": "Overarching checklist or professional feedback on safety, pace, or cultural etiquette"
 }
-Ensure your response is raw JSON and contains exactly these fields.`;
+Ensure your response is raw JSON and contains exactly these fields. The "days" array must contain exactly ${travelDaysCount} days, and each day must contain exactly ${activitiesPerDayCount} activities.`;
 
     let parsedData: any = null;
 
@@ -129,7 +208,8 @@ Ensure your response is raw JSON and contains exactly these fields.`;
             { role: "system", content: "You are the premium, futuristic travel OS 'Wanderful' that curates flawless itineraries. Deliver highly immersive, exciting descriptions, practical travel advice, realistic costs, and concrete safety tips. Act as a world-class travel planner. You must return only a valid JSON response." },
             { role: "user", content: `${prompt}\n\n${jsonFormatSpecs}` }
           ],
-          response_format: { type: "json_object" }
+          response_format: { type: "json_object" },
+          max_tokens: 8000
         })
       });
 
@@ -154,7 +234,7 @@ Ensure your response is raw JSON and contains exactly these fields.`;
         },
         body: JSON.stringify({
           model: "claude-3-5-sonnet-20241022",
-          max_tokens: 4000,
+          max_tokens: 8000,
           system: "You are the premium, futuristic travel OS 'Wanderful' that curates flawless itineraries. Deliver highly immersive, exciting descriptions, practical travel advice, realistic costs, and concrete safety tips. Act as a world-class travel planner. Return raw JSON matching the schema.",
           messages: [{ role: "user", content: `${prompt}\n\n${jsonFormatSpecs}` }]
         })
@@ -184,7 +264,8 @@ Ensure your response is raw JSON and contains exactly these fields.`;
             { role: "system", content: "You are the premium, futuristic travel OS 'Wanderful' that curates flawless itineraries. Deliver highly immersive, exciting descriptions, practical travel advice, realistic costs, and concrete safety tips. Act as a world-class travel planner. Return a valid JSON." },
             { role: "user", content: `${prompt}\n\n${jsonFormatSpecs}` }
           ],
-          response_format: { type: "json_object" }
+          response_format: { type: "json_object" },
+          max_tokens: 8000
         })
       });
 
@@ -211,9 +292,10 @@ Ensure your response is raw JSON and contains exactly these fields.`;
 
       const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
-        contents: prompt,
+        contents: `${prompt}\n\n${jsonFormatSpecs}`,
         config: {
-          systemInstruction: "You are the premium, futuristic travel OS 'Wanderful' that curates flawless itineraries. Deliver highly immersive, exciting descriptions, practical travel advice, realistic costs, and concrete safety tips. Act as a world-class travel planner.",
+          systemInstruction: `You are the premium, futuristic travel OS 'Wanderful' that curates flawless itineraries. Deliver highly immersive, exciting descriptions, practical travel advice, realistic costs, and concrete safety tips. Act as a world-class travel planner. You must return exactly ${travelDaysCount} days and exactly ${activitiesPerDayCount} activities per day.`,
+          maxOutputTokens: 8192,
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -275,9 +357,12 @@ Ensure your response is raw JSON and contains exactly these fields.`;
       parsedData = JSON.parse(response.text || "{}");
     }
 
+    parsedData = enforceItineraryDensity(parsedData, travelDaysCount, activitiesPerDayCount);
+
     if (parsedData && typeof parsedData === "object") {
       parsedData.startDate = travelStartDate || undefined;
       parsedData.seasonalContext = travelTimingContext;
+      parsedData.activitiesPerDay = activitiesPerDayCount;
     }
 
     return res.status(200).json(parsedData);

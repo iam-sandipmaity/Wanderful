@@ -64,7 +64,7 @@ export default function HomePage() {
                     onSubmit={handleGenerateTrip}
                     className="w-full max-w-6xl liquid-glass rounded-[32px] p-5 mb-10 text-left relative focus-within:ring-2 focus-within:ring-white/20 transition-all duration-300"
                   >
-                    <div className="flex flex-col md:flex-row md:flex-wrap 2xl:flex-nowrap items-stretch md:items-end gap-3">
+                    <div className="flex flex-col md:flex-row md:flex-wrap items-stretch md:items-end gap-3">
                       
                       {/* starting city */}
                       <div className="w-full md:flex-1 md:min-w-[210px] relative">
@@ -155,6 +155,25 @@ export default function HomePage() {
                         </div>
                       </div>
 
+                      <div className="w-full md:w-36 md:shrink-0 relative">
+                        <label className="block text-[8px] font-mono tracking-widest text-white/40 uppercase mb-1 px-1">Daily stops</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">
+                            <Clock className="w-3.5 h-3.5" />
+                          </span>
+                          <select
+                            value={planner.activitiesPerDay}
+                            onChange={(e) => setPlanner({ ...planner, activitiesPerDay: e.target.value })}
+                            className="w-full bg-black border border-white/5 rounded-2xl pl-9 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-white/30 transition-all cursor-pointer appearance-none"
+                          >
+                            <option value="3">3 Stops</option>
+                            <option value="4">4 Stops</option>
+                            <option value="5">5 Stops</option>
+                            <option value="6">6 Stops</option>
+                          </select>
+                        </div>
+                      </div>
+
                       {/* Style drop */}
                       <div className="w-full md:w-40 md:shrink-0 relative">
                         <label className="block text-[8px] font-mono tracking-widest text-white/40 uppercase mb-1 px-1">Travel Style</label>
@@ -179,7 +198,7 @@ export default function HomePage() {
                       </div>
 
                       {/* Submission */}
-                      <div className="w-full md:w-auto md:shrink-0 pt-3 md:pt-4">
+                      <div className="w-full md:w-auto md:shrink-0 md:ml-auto pt-3 md:pt-4">
                         <button
                           type="submit"
                           className="w-full md:w-auto px-6 py-2.5 bg-white text-black font-semibold rounded-full hover:scale-105 active:scale-95 transition-all text-xs font-mono tracking-wider cursor-pointer"

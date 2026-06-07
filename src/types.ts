@@ -28,6 +28,7 @@ export interface Itinerary {
   tagline: string;
   destination: string;
   durationDays: number;
+  activitiesPerDay?: number;
   startDate?: string;
   seasonalContext?: string;
   travelStyle: string;
@@ -43,6 +44,7 @@ export interface PlannerState {
   startingCity: string;
   budget: string;
   days: string;
+  activitiesPerDay: string;
   startDate: string;
   travelStyle: string;
 }

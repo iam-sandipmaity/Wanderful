@@ -119,6 +119,10 @@ export default function TripPage() {
 
   const plannedDays = itinerary.days?.length || 0;
   const totalDays = Math.max(itinerary.durationDays || plannedDays || 1, 1);
+  const activeDay = itinerary.days?.[activeDayIdx];
+  const activeDayStopCount = activeDay?.activities?.length || 0;
+  const requestedStopsPerDay = itinerary.activitiesPerDay || 0;
+  const activeDayIsUnderfilled = requestedStopsPerDay > 0 && activeDayStopCount < requestedStopsPerDay;
   const plannedPercent = Math.min(100, Math.round((plannedDays / totalDays) * 100));
   const activeProgressPercent = Math.min(100, Math.round(((activeDayIdx + 1) / totalDays) * 100));
   const activeWeather = weatherForecast?.days[activeDayIdx] || weatherForecast?.days[0];
@@ -217,6 +221,11 @@ export default function TripPage() {
                     <span className="px-2 py-0.5 rounded bg-white/10 text-white/80 text-[9px] font-mono tracking-wider uppercase">
                       {itinerary.durationDays} DAYS INCLUDED
                     </span>
+                    {itinerary.activitiesPerDay && (
+                      <span className="px-2 py-0.5 rounded bg-white/10 text-white/80 text-[9px] font-mono tracking-wider uppercase">
+                        {itinerary.activitiesPerDay} STOPS / DAY
+                      </span>
+                    )}
                     {itinerary.startDate && (
                       <span className="px-2 py-0.5 rounded bg-white/10 text-white/80 text-[9px] font-mono tracking-wider uppercase">
                         START {new Date(`${itinerary.startDate}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
@@ -494,7 +503,7 @@ export default function TripPage() {
                   </div>
 
                   {/* Detailing active day card */}
-                  {itinerary.days && itinerary.days[activeDayIdx] && (
+                  {itinerary.days && activeDay && (
                     <motion.div
                       key={activeDayIdx}
                       initial={{ opacity: 0, y: 10 }}
@@ -507,27 +516,36 @@ export default function TripPage() {
                             Active Itinerary Stage
                           </span>
                           <h3 className="text-xl md:text-2xl font-semibold uppercase tracking-tight text-white font-display">
-                            {itinerary.days[activeDayIdx].title}
+                            {activeDay.title}
                           </h3>
                         </div>
                         <div className="px-3.5 py-2 rounded-xl bg-black/40 border border-white/5">
                           <span className="block text-[8px] font-mono text-white/40 uppercase">Retreat Station</span>
-                          <span className="text-xs font-bold text-white block mt-0.5">{itinerary.days[activeDayIdx].accommodations}</span>
+                          <span className="text-xs font-bold text-white block mt-0.5">{activeDay.accommodations}</span>
                         </div>
                       </div>
 
-                      {itinerary.days[activeDayIdx].tips && (
+                      {activeDayIsUnderfilled && (
+                        <div className="p-3 rounded-xl bg-amber-400/[0.05] border border-amber-400/15 text-amber-200 text-xs leading-relaxed mb-4 flex items-start gap-2.5">
+                          <AlertCircle className="w-4 h-4 text-amber-300 shrink-0 mt-0.5" />
+                          <p>
+                            <span className="font-semibold text-amber-100">Incomplete activity density:</span> This day has {activeDayStopCount} stops, but the selected planner pace requested {requestedStopsPerDay}. Generate again to receive a fuller day plan.
+                          </p>
+                        </div>
+                      )}
+
+                      {activeDay.tips && (
                         <div className="p-3 rounded-xl bg-cyan-400/[0.04] border border-cyan-400/10 text-cyan-300 text-xs leading-relaxed mb-6 flex items-start gap-2.5">
                           <AlertCircle className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
                           <p>
-                            <span className="font-semibold text-cyan-200">Local Guide Alert:</span> {itinerary.days[activeDayIdx].tips}
+                            <span className="font-semibold text-cyan-200">Local Guide Alert:</span> {activeDay.tips}
                           </p>
                         </div>
                       )}
 
                       {/* Daily Activities sequence */}
                       <div className="space-y-6">
-                        {itinerary.days[activeDayIdx].activities?.map((act, aIdx) => (
+                        {activeDay.activities?.map((act, aIdx) => (
                           <div 
                             key={aIdx} 
                             onMouseEnter={() => setActiveActivityIdx(aIdx)}
@@ -589,7 +607,7 @@ export default function TripPage() {
                         </div>
 
                         <MapView 
-                          activities={itinerary.days[activeDayIdx].activities} 
+                          activities={activeDay.activities} 
                           currentActivityIdx={activeActivityIdx} 
                         />
                       </div>

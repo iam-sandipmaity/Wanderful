@@ -204,6 +204,42 @@ function navToRoute(nav: string) {
   return "/";
 }
 
+function enforceClientItineraryDensity(
+  generatedItinerary: any,
+  expectedDays: number,
+  expectedActivitiesPerDay: number
+) {
+  if (!generatedItinerary || typeof generatedItinerary !== "object" || !Array.isArray(generatedItinerary.days)) {
+    throw new Error("The generated itinerary was incomplete. Please try again.");
+  }
+
+  if (generatedItinerary.days.length < expectedDays) {
+    throw new Error(
+      `The generated itinerary only has ${generatedItinerary.days.length} days, but you requested ${expectedDays}. Please try again.`
+    );
+  }
+
+  generatedItinerary.days.slice(0, expectedDays).forEach((day: any, index: number) => {
+    const activityCount = Array.isArray(day.activities) ? day.activities.length : 0;
+    if (activityCount < expectedActivitiesPerDay) {
+      throw new Error(
+        `The AI returned only ${activityCount} stops for Day ${index + 1}. You requested ${expectedActivitiesPerDay} stops per day. Please try again or choose fewer daily stops.`
+      );
+    }
+  });
+
+  generatedItinerary.days = generatedItinerary.days.slice(0, expectedDays).map((day: any) => ({
+    ...day,
+    activities: Array.isArray(day.activities)
+      ? day.activities.slice(0, expectedActivitiesPerDay)
+      : []
+  }));
+  generatedItinerary.durationDays = expectedDays;
+  generatedItinerary.activitiesPerDay = expectedActivitiesPerDay;
+
+  return generatedItinerary as Itinerary;
+}
+
 export default function WanderfulShell() {
   const [routePath, setRoutePath] = useState(() => normalizeRoutePath(window.location.pathname));
   const activeNav = routeToNav(routePath);
@@ -224,6 +260,7 @@ export default function WanderfulShell() {
     startingCity: "",
     budget: "",
     days: "3",
+    activitiesPerDay: "4",
     startDate: "",
     travelStyle: "Adventure"
   });
@@ -349,35 +386,38 @@ export default function WanderfulShell() {
   useEffect(() => {
     const detectLocation = async () => {
       try {
-        const res = await fetch("https://ipapi.co/json/");
-        if (res.ok) {
-          const data = await res.json();
-          const code = data.country_code || data.country || "";
-          
-          if (code === "IN") {
-            setActiveCurrency("INR");
-          } else if (code === "CN") {
-            setActiveCurrency("CNY");
-          } else if (code === "JP") {
-            setActiveCurrency("JPY");
-          } else if (code === "GB") {
-            setActiveCurrency("GBP");
-          } else if (code === "AU") {
-            setActiveCurrency("AUD");
-          } else if (code === "CA") {
-            setActiveCurrency("CAD");
-          } else if (code === "SG") {
-            setActiveCurrency("SGD");
-          } else if (code === "AE") {
-            setActiveCurrency("AED");
-          } else if (["DE", "FR", "IT", "ES", "NL", "BE", "PT", "IE", "GR", "AT", "FI", "EE", "LV", "LT", "SK", "SI", "CY", "MT", "LU"].includes(code)) {
-            setActiveCurrency("EUR");
-          } else {
-            setActiveCurrency("USD");
-          }
+        const res = await fetch("/api/geo");
+        const contentType = res.headers.get("content-type") || "";
+        if (!res.ok || !contentType.includes("application/json")) {
+          return;
+        }
+
+        const data = await res.json();
+        const code = data.country_code || data.country || "";
+        
+        if (code === "IN") {
+          setActiveCurrency("INR");
+        } else if (code === "CN") {
+          setActiveCurrency("CNY");
+        } else if (code === "JP") {
+          setActiveCurrency("JPY");
+        } else if (code === "GB") {
+          setActiveCurrency("GBP");
+        } else if (code === "AU") {
+          setActiveCurrency("AUD");
+        } else if (code === "CA") {
+          setActiveCurrency("CAD");
+        } else if (code === "SG") {
+          setActiveCurrency("SGD");
+        } else if (code === "AE") {
+          setActiveCurrency("AED");
+        } else if (["DE", "FR", "IT", "ES", "NL", "BE", "PT", "IE", "GR", "AT", "FI", "EE", "LV", "LT", "SK", "SI", "CY", "MT", "LU"].includes(code)) {
+          setActiveCurrency("EUR");
+        } else {
+          setActiveCurrency("USD");
         }
       } catch (e) {
-        console.warn("IP Geolocation selector falling back to USD.", e);
+        // Location detection is optional; USD remains the safe default.
       }
     };
     detectLocation();
@@ -489,6 +529,7 @@ export default function WanderfulShell() {
           startingCity: planner.startingCity,
           budget: planner.budget,
           days: planner.days,
+          activitiesPerDay: planner.activitiesPerDay,
           startDate: planner.startDate,
           travelStyle: planner.travelStyle,
           userApiKey: activeApiKey.trim() || undefined,
@@ -504,7 +545,11 @@ export default function WanderfulShell() {
         throw new Error(data.error || "Generation engine was unable to synthesize the path.");
       }
 
-      setItinerary(data);
+      const expectedDays = Math.min(Math.max(parseInt(planner.days) || 3, 1), 10);
+      const expectedActivitiesPerDay = Math.min(Math.max(parseInt(planner.activitiesPerDay) || 4, 3), 6);
+      const completeItinerary = enforceClientItineraryDensity(data, expectedDays, expectedActivitiesPerDay);
+
+      setItinerary(completeItinerary);
       setPackedRegistry({});
       navigateTo("/trip");
       setActiveDayIdx(0);
