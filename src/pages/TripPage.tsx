@@ -3,8 +3,10 @@ import { motion } from "motion/react";
 import {
   AlertCircle,
   ArrowLeft,
+  BedDouble,
   BookOpen,
   Briefcase,
+  Bus,
   Calendar,
   Check,
   Clock,
@@ -21,7 +23,9 @@ import {
   Share2,
   ShieldCheck,
   Sparkle,
-  Sparkles
+  Sparkles,
+  TicketCheck,
+  Utensils
 } from "lucide-react";
 import MapView from "../components/MapView";
 import VerticalTimeline from "../components/VerticalTimeline";
@@ -88,6 +92,36 @@ export default function TripPage() {
   const plannedPercent = Math.min(100, Math.round((plannedDays / totalDays) * 100));
   const activeProgressPercent = Math.min(100, Math.round(((activeDayIdx + 1) / totalDays) * 100));
   const activeWeather = weatherForecast?.days[activeDayIdx] || weatherForecast?.days[0];
+  const budgetItems = [
+    {
+      label: "Stays & Lodges",
+      value: itinerary.budgetBreakdown?.stays || "Included in estimate",
+      note: "Hotels, homestays, and nightly base",
+      icon: BedDouble,
+      accent: "text-cyan-300 border-cyan-400/20 bg-cyan-400/10"
+    },
+    {
+      label: "Transit",
+      value: itinerary.budgetBreakdown?.transport || "Included in estimate",
+      note: "Local transfers, taxis, trains, and route access",
+      icon: Bus,
+      accent: "text-purple-300 border-purple-400/20 bg-purple-400/10"
+    },
+    {
+      label: "Dining",
+      value: itinerary.budgetBreakdown?.food || "Included in estimate",
+      note: "Meals, snacks, tastings, and cafe stops",
+      icon: Utensils,
+      accent: "text-emerald-300 border-emerald-400/20 bg-emerald-400/10"
+    },
+    {
+      label: "Activities",
+      value: itinerary.budgetBreakdown?.activities || "Included in estimate",
+      note: "Tickets, guides, fees, and booked experiences",
+      icon: TicketCheck,
+      accent: "text-amber-300 border-amber-400/20 bg-amber-400/10"
+    }
+  ];
 
   return (
             <motion.div
@@ -305,28 +339,53 @@ export default function TripPage() {
                   </div>
 
                   {/* Budget distribution */}
-                  <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 text-left">
-                    <h4 className="text-[10px] font-mono tracking-[0.14em] text-emerald-400 uppercase mb-3 flex items-center gap-2 border-b border-white/5 pb-2">
-                      <DollarSign className="w-3.5 h-3.5" />
-                      ESTIMATED BREAKDOWN
-                    </h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
-                        <span className="block text-[9px] font-mono text-white/40 mb-1">Stays & Lodges</span>
-                        <span className="block text-xs font-mono text-white">{itinerary.budgetBreakdown.stays}</span>
+                  <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 text-left overflow-hidden relative">
+                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/35 to-transparent" />
+                    <div className="flex items-start justify-between gap-4 border-b border-white/5 pb-4 mb-4">
+                      <div>
+                        <h4 className="text-[10px] font-mono tracking-[0.14em] text-emerald-400 uppercase flex items-center gap-2">
+                          <DollarSign className="w-3.5 h-3.5" />
+                          Estimated Breakdown
+                        </h4>
+                        <p className="text-[10px] text-white/40 font-mono mt-1">
+                          Practical planning ranges for this itinerary
+                        </p>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
-                        <span className="block text-[9px] font-mono text-white/40 mb-1">Transit cost</span>
-                        <span className="block text-xs font-mono text-white">{itinerary.budgetBreakdown.transport}</span>
+                      <div className="text-right shrink-0">
+                        <span className="block text-[9px] font-mono text-white/35 uppercase tracking-widest">
+                          Total
+                        </span>
+                        <span className="block text-lg font-bold text-emerald-300 font-mono leading-tight">
+                          {itinerary.estimatedTotalCost}
+                        </span>
                       </div>
-                      <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
-                        <span className="block text-[9px] font-mono text-white/40 mb-1">Dining quota</span>
-                        <span className="block text-xs font-mono text-white">{itinerary.budgetBreakdown.food}</span>
-                      </div>
-                      <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
-                        <span className="block text-[9px] font-mono text-white/40 mb-1">Retreats</span>
-                        <span className="block text-xs font-mono text-white">{itinerary.budgetBreakdown.activities}</span>
-                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
+                      {budgetItems.map((item) => {
+                        const BudgetIcon = item.icon;
+                        return (
+                          <div
+                            key={item.label}
+                            className="min-h-[134px] p-3.5 rounded-2xl bg-black/35 border border-white/5 flex flex-col"
+                          >
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 ${item.accent}`}>
+                                <BudgetIcon className="w-4 h-4" />
+                              </span>
+                              <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest">
+                                {item.label}
+                              </span>
+                            </div>
+                            <span className="text-sm font-semibold text-white font-mono leading-snug">
+                              {item.value}
+                            </span>
+                            <span className="text-[10px] text-white/38 leading-snug mt-2">
+                              {item.note}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -472,10 +531,10 @@ export default function TripPage() {
                         <div className="flex items-center justify-between mb-4">
                           <div>
                             <h4 className="text-xs font-mono tracking-widest text-cyan-400 uppercase">
-                              OSM Satellite Projection
+                              Interactive Route Map
                             </h4>
                             <p className="text-[10px] text-white/50 font-mono mt-0.5">
-                              Real-time interactive matrix plot of targeted retreats for Day {activeDayIdx + 1}
+                              Switch between dark, light, street, and satellite map styles for Day {activeDayIdx + 1}
                             </p>
                           </div>
                           
