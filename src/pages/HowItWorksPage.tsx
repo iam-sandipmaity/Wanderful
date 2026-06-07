@@ -1,27 +1,79 @@
 import {
-  AlertCircle,
-  ArrowLeft,
-  BookOpen,
-  Briefcase,
-  Calendar,
+  Activity,
+  ArrowRight,
+  Building2,
+  CalendarCheck,
   Check,
-  Clock,
-  Coins,
+  ClipboardCheck,
   Compass,
   Cpu,
   DollarSign,
-  Eye,
+  Droplets,
+  Flame,
+  Footprints,
   Layers,
-  Loader2,
   Lock,
-  MapPin,
+  MapPinned,
+  Mountain,
   Printer,
-  Share2,
+  Route,
   ShieldCheck,
-  Sparkle,
-  Sparkles
+  Sparkles,
+  type LucideIcon
 } from "lucide-react";
 import { useWanderful } from "../state/WanderfulContext";
+
+type TerrainId = "urban" | "alpine" | "volcanic";
+type PaceId = "meditative" | "discovery" | "endurance";
+
+interface SelectOption<T extends string> {
+  id: T;
+  label: string;
+  desc: string;
+  icon: LucideIcon;
+}
+
+const journeySteps: Array<{
+  num: string;
+  title: string;
+  desc: string;
+  icon: LucideIcon;
+  accent: string;
+}> = [
+  {
+    num: "01",
+    title: "Tell Wanderful your constraints",
+    desc: "Start with city, budget, trip length, date, and travel style. The planner uses those details as real boundaries, not loose suggestions.",
+    icon: ClipboardCheck,
+    accent: "text-cyan-300 border-cyan-400/25 bg-cyan-400/10"
+  },
+  {
+    num: "02",
+    title: "Generate a route with local context",
+    desc: "The engine balances timing, pace, costs, highlights, safety notes, and map-ready coordinates into a day-by-day route.",
+    icon: Route,
+    accent: "text-purple-300 border-purple-400/25 bg-purple-400/10"
+  },
+  {
+    num: "03",
+    title: "Use it as a travel booklet",
+    desc: "Review the itinerary, open mapped stops, tick packing items, print a clean copy, or share the plan when the route feels right.",
+    icon: Printer,
+    accent: "text-emerald-300 border-emerald-400/25 bg-emerald-400/10"
+  }
+];
+
+const terrainOptions: Array<SelectOption<TerrainId>> = [
+  { id: "urban", label: "City Grid", desc: "Transit, cafes, light walking", icon: Building2 },
+  { id: "alpine", label: "High Trail", desc: "Slope, wind, uneven ground", icon: Mountain },
+  { id: "volcanic", label: "Rough Terrain", desc: "Heat, dust, exposed paths", icon: Flame }
+];
+
+const paceOptions: Array<SelectOption<PaceId>> = [
+  { id: "meditative", label: "Slow", desc: "Longer pauses and gentler days", icon: Footprints },
+  { id: "discovery", label: "Balanced", desc: "Active, flexible exploration", icon: Compass },
+  { id: "endurance", label: "Intense", desc: "Full days and higher output", icon: Activity }
+];
 
 export default function HowItWorksPage() {
   const {
@@ -32,285 +84,361 @@ export default function HowItWorksPage() {
     simTerrain
   } = useWanderful();
 
+  const terrainCopy = {
+    urban: {
+      footwear: "Cushioned city shoes",
+      footwearNote: "Best for stations, museums, markets, and long pavement stretches.",
+      layers: "One breathable layer",
+      layersNote: "Keep the kit light and leave room for evening weather shifts."
+    },
+    alpine: {
+      footwear: "Trail grip soles",
+      footwearNote: "Built for loose paths, wet rock, and uneven ascent sections.",
+      layers: "Warm modular layers",
+      layersNote: "Pack a wind shell and insulation that can come on and off quickly."
+    },
+    volcanic: {
+      footwear: "Closed rugged boots",
+      footwearNote: "Protects against sharp ground, dust, heat pockets, and exposed trails.",
+      layers: "Sun and grit protection",
+      layersNote: "Use covered layers, eye protection, and a light outer shell."
+    }
+  }[simTerrain as TerrainId];
+
+  const paceCopy = {
+    meditative: {
+      hydration: "1.5 liters per day",
+      hydrationNote: "Comfortable for slower movement with frequent rest stops.",
+      recovery: "Unhurried buffer time",
+      recoveryNote: "Ideal for scenic detours, slow meals, and quieter mornings."
+    },
+    discovery: {
+      hydration: "2.5 liters per day",
+      hydrationNote: "Enough for steady walking, short climbs, and warm afternoons.",
+      recovery: "Balanced rest rhythm",
+      recoveryNote: "Keeps the day energetic without turning every hour into a sprint."
+    },
+    endurance: {
+      hydration: "4 liters plus salts",
+      hydrationNote: "Useful for exposed routes, full-day movement, and heavy heat.",
+      recovery: "Breaks every 90 minutes",
+      recoveryNote: "Protects attention, knees, and mood on long active days."
+    }
+  }[simPace as PaceId];
+
   return (
-    <>
-<div className="w-full max-w-4xl text-left">
-                  <div className="mb-6 flex flex-col items-center text-center">
-                    <span className="px-3 py-1 text-[9px] font-mono text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 rounded-full tracking-widest uppercase mb-3">
-                      SYSTEM SPECIFICATIONS
+    <div className="w-full max-w-6xl text-left">
+      <section className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-6 lg:gap-10 items-stretch">
+        <div className="flex flex-col justify-center">
+          <span className="w-fit px-3 py-1 text-[9px] font-mono text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 rounded-full tracking-widest uppercase mb-4">
+            HOW WANDERFUL WORKS
+          </span>
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white font-display leading-[1.05]">
+            From rough idea to trip-ready route.
+          </h2>
+          <p className="text-sm md:text-base text-white/58 max-w-2xl mt-5 leading-relaxed font-sans">
+            Wanderful turns a few practical choices into a usable itinerary with mapped stops, cost-aware pacing, packing guidance, and a printable travel booklet.
+          </p>
+
+          <div className="mt-7 flex flex-wrap gap-2.5">
+            {[
+              { label: "Budget aware", icon: DollarSign },
+              { label: "Map ready", icon: MapPinned },
+              { label: "Privacy first", icon: Lock },
+              { label: "Printable", icon: Printer }
+            ].map((chip) => {
+              const ChipIcon = chip.icon;
+              return (
+                <span
+                  key={chip.label}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.025] border border-white/5 px-3 py-1.5 text-[11px] text-white/70 font-mono tracking-wider uppercase"
+                >
+                  <ChipIcon className="w-3.5 h-3.5 text-cyan-300" />
+                  {chip.label}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="liquid-glass rounded-[28px] p-5 md:p-6 border border-white/5 overflow-hidden">
+          <div className="flex items-center justify-between gap-4 pb-5 border-b border-white/5">
+            <div>
+              <span className="text-[9px] font-mono text-white/35 tracking-widest uppercase">
+                Live route output
+              </span>
+              <h3 className="mt-1 text-xl font-semibold text-white font-display tracking-tight">
+                What you receive
+              </h3>
+            </div>
+            <div className="h-11 w-11 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-cyan-300">
+              <Layers className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="pt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { title: "Daily plan", text: "Morning-to-evening structure with time windows.", icon: CalendarCheck },
+              { title: "Mapped stops", text: "Coordinates ready for the interactive map.", icon: MapPinned },
+              { title: "Budget cues", text: "Cost estimates kept visible while you review.", icon: DollarSign },
+              { title: "Safety notes", text: "Pace, terrain, and packing guidance in one place.", icon: ShieldCheck }
+            ].map((item) => {
+              const ItemIcon = item.icon;
+              return (
+                <div key={item.title} className="rounded-2xl bg-white/[0.02] border border-white/5 p-4">
+                  <ItemIcon className="w-4 h-4 text-white/55 mb-3" />
+                  <h4 className="text-sm font-semibold text-white font-display">{item.title}</h4>
+                  <p className="mt-1 text-[11px] text-white/45 leading-relaxed">{item.text}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-10">
+        {journeySteps.map((step) => {
+          const StepIcon = step.icon;
+          return (
+            <div
+              key={step.num}
+              className="liquid-glass rounded-[24px] p-5 md:p-6 border border-white/5 relative overflow-hidden group hover:border-white/15 transition-all duration-300"
+            >
+              <div className="flex items-start justify-between gap-4 mb-6">
+                <span className="text-3xl font-bold font-mono text-white/10 group-hover:text-white/20 transition-colors">
+                  {step.num}
+                </span>
+                <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${step.accent}`}>
+                  <StepIcon className="w-5 h-5" />
+                </div>
+              </div>
+
+              <h3 className="text-base md:text-lg font-semibold text-white tracking-tight font-display">
+                {step.title}
+              </h3>
+              <p className="text-xs text-white/50 leading-relaxed font-sans mt-2">
+                {step.desc}
+              </p>
+            </div>
+          );
+        })}
+      </section>
+
+      <section className="mt-8 liquid-glass p-5 md:p-7 rounded-[28px] border border-white/5 overflow-hidden">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 pb-6 border-b border-white/5">
+          <div>
+            <span className="px-2.5 py-0.5 text-[9px] font-mono text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 rounded-full tracking-widest uppercase inline-block">
+              INTERACTIVE PACKING PREVIEW
+            </span>
+            <h3 className="text-2xl md:text-3xl font-semibold text-white tracking-tight font-display mt-3">
+              See how terrain and pace change the advice.
+            </h3>
+            <p className="text-xs md:text-sm text-white/50 font-sans mt-2 max-w-2xl leading-relaxed">
+              This preview shows the kind of practical recommendations Wanderful includes once a route is generated.
+            </p>
+          </div>
+          <div className="hidden md:flex items-center gap-2 text-[10px] font-mono text-white/35 tracking-widest uppercase">
+            <Cpu className="w-3.5 h-3.5 text-cyan-300" />
+            Updates instantly
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 pt-6">
+          <div className="lg:col-span-5 space-y-6">
+            <div>
+              <label className="text-[10px] font-mono tracking-widest text-white/40 uppercase block font-semibold mb-3">
+                Terrain
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2.5">
+                {terrainOptions.map((terrain) => {
+                  const TerrainIcon = terrain.icon;
+                  const isActive = simTerrain === terrain.id;
+                  return (
+                    <button
+                      key={terrain.id}
+                      type="button"
+                      onClick={() => setSimTerrain(terrain.id)}
+                      className={`min-h-[76px] p-3 rounded-2xl border text-left transition-all duration-300 cursor-pointer flex items-center gap-3 ${
+                        isActive
+                          ? "bg-cyan-500/10 border-cyan-400/45 text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.12)]"
+                          : "bg-white/[0.01] border-white/5 text-white/62 hover:bg-white/[0.04] hover:border-white/10"
+                      }`}
+                    >
+                      <span className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
+                        isActive ? "border-cyan-400/35 bg-cyan-400/10 text-cyan-300" : "border-white/5 bg-white/[0.02] text-white/42"
+                      }`}>
+                        <TerrainIcon className="w-5 h-5" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="text-xs font-semibold block">{terrain.label}</span>
+                        <span className="text-[10px] text-white/42 block leading-tight mt-1">{terrain.desc}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-mono tracking-widest text-white/40 uppercase block font-semibold mb-3">
+                Pace
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2.5">
+                {paceOptions.map((pace) => {
+                  const PaceIcon = pace.icon;
+                  const isActive = simPace === pace.id;
+                  return (
+                    <button
+                      key={pace.id}
+                      type="button"
+                      onClick={() => setSimPace(pace.id)}
+                      className={`min-h-[76px] p-3 rounded-2xl border text-left transition-all duration-300 cursor-pointer flex items-center gap-3 ${
+                        isActive
+                          ? "bg-purple-500/10 border-purple-400/45 text-purple-100 shadow-[0_0_18px_rgba(168,85,247,0.12)]"
+                          : "bg-white/[0.01] border-white/5 text-white/62 hover:bg-white/[0.04] hover:border-white/10"
+                      }`}
+                    >
+                      <span className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
+                        isActive ? "border-purple-400/35 bg-purple-400/10 text-purple-300" : "border-white/5 bg-white/[0.02] text-white/42"
+                      }`}>
+                        <PaceIcon className="w-5 h-5" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="text-xs font-semibold block">{pace.label}</span>
+                        <span className="text-[10px] text-white/42 block leading-tight mt-1">{pace.desc}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-7 rounded-[24px] bg-white/[0.015] border border-white/5 p-4 md:p-5">
+            <div className="flex items-center justify-between gap-3 mb-5">
+              <div>
+                <span className="text-[10px] font-mono tracking-widest text-white/30 uppercase block font-semibold">
+                  Recommendation preview
+                </span>
+                <h4 className="text-lg font-semibold text-white font-display mt-1">
+                  Packing and pace notes
+                </h4>
+              </div>
+              <Sparkles className="w-5 h-5 text-purple-300" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                {
+                  label: "Footwear",
+                  value: terrainCopy.footwear,
+                  note: terrainCopy.footwearNote,
+                  icon: Footprints,
+                  accent: "text-cyan-300"
+                },
+                {
+                  label: "Layers",
+                  value: terrainCopy.layers,
+                  note: terrainCopy.layersNote,
+                  icon: Layers,
+                  accent: "text-purple-300"
+                },
+                {
+                  label: "Hydration",
+                  value: paceCopy.hydration,
+                  note: paceCopy.hydrationNote,
+                  icon: Droplets,
+                  accent: "text-emerald-300"
+                },
+                {
+                  label: "Recovery",
+                  value: paceCopy.recovery,
+                  note: paceCopy.recoveryNote,
+                  icon: ShieldCheck,
+                  accent: "text-amber-300"
+                }
+              ].map((item) => {
+                const ItemIcon = item.icon;
+                return (
+                  <div key={item.label} className="rounded-2xl bg-white/[0.02] border border-white/5 p-4 min-h-[148px]">
+                    <div className="flex items-center gap-2 mb-3">
+                      <ItemIcon className={`w-4 h-4 ${item.accent}`} />
+                      <span className="text-[9px] font-mono text-white/35 uppercase tracking-widest">
+                        {item.label}
+                      </span>
+                    </div>
+                    <span className="text-sm font-semibold text-white block">
+                      {item.value}
                     </span>
-                    <h2 className="text-3xl md:text-5xl font-semibold tracking-tight text-white font-display">
-                      Wanderful Travel OS Architecture
-                    </h2>
-                    <p className="text-sm text-white/60 max-w-xl mt-3 leading-relaxed font-sans">
-                      A state-of-the-art server-side routing matrix converting user budget curves and geo-spatial vectors and mapping them into pristine vector booklets in under 60 seconds.
+                    <p className="text-[11px] text-white/45 mt-2 leading-relaxed">
+                      {item.note}
                     </p>
                   </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
 
-                  {/* INTERACTIVE COMPASS DIAGRAM & TIMELINE */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-                    {[
-                      {
-                        num: "01",
-                        title: "Preference Synapse",
-                        desc: "Our platform queries IP geolocation endpoints to auto-configure native country currency scales, establishing optimal micro-budget margins specific to your style.",
-                        icon: Cpu,
-                        color: "from-cyan-500/20 to-transparent",
-                        glow: "border-cyan-500/20 text-cyan-400"
-                      },
-                      {
-                        num: "02",
-                        title: "Vector Curation",
-                        desc: "The Gemini intelligence engine parses customized coordinates, mapping unique high-fidelity local landmarks, regional costs, safety constraints, and scheduling guidelines.",
-                        icon: Sparkles,
-                        color: "from-purple-500/20 to-transparent",
-                        glow: "border-purple-500/20 text-purple-400"
-                      },
-                      {
-                        num: "03",
-                        title: "Dynamic Plotting",
-                        desc: "Clean coordinate points are structured and directly projected onto an interactive OpenStreetMap matrix. This generates a printable customized booklet with built-in packing lists.",
-                        icon: Compass,
-                        color: "from-emerald-500/20 to-transparent",
-                        glow: "border-emerald-500/20 text-emerald-400"
-                      }
-                    ].map((step, idx) => {
-                      const StepIcon = step.icon;
-                      return (
-                        <div 
-                          key={idx}
-                          className="liquid-glass rounded-[24px] p-6 border border-white/5 relative overflow-hidden group hover:border-white/20 transition-all duration-300"
-                        >
-                          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl opacity-20 pointer-events-none rounded-bl-full" />
-                          
-                          <div className="flex items-center justify-between mb-6">
-                            <span className="text-3xl font-bold font-mono text-white/10 group-hover:text-white/20 transition-colors">
-                              {step.num}
-                            </span>
-                            <div className={`w-10 h-10 rounded-xl bg-white/[0.02] border flex items-center justify-center p-2 ${step.glow}`}>
-                              <StepIcon className="w-5 h-5" />
-                            </div>
-                          </div>
+      <section className="mt-8 grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-5">
+        <div className="liquid-glass p-5 md:p-6 rounded-[24px] border border-white/5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-400/10 border border-emerald-400/20 text-emerald-300 flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-base font-semibold text-white font-display">
+                Privacy by default
+              </h4>
+              <p className="text-[10px] text-white/35 font-mono tracking-widest uppercase">
+                Keep your trip intent close
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-white/55 leading-relaxed">
+            Wanderful does not need an account to plan. Provider keys are stored in your browser when you add them, and trip planning data is used to generate your itinerary.
+          </p>
+        </div>
 
-                          <h4 className="text-base font-semibold text-white mb-2 tracking-wide font-display">
-                            {step.title}
-                          </h4>
-                          <p className="text-xs text-white/50 leading-relaxed font-sans">
-                            {step.desc}
-                          </p>
-                        </div>
-                      );
-                    })}
+        <div className="liquid-glass p-5 md:p-6 rounded-[24px] border border-white/5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { label: "Plan", value: "Minute-level days", icon: CalendarCheck },
+              { label: "Navigate", value: "Open map stops", icon: MapPinned },
+              { label: "Carry", value: "Packing checklist", icon: Check }
+            ].map((stat) => {
+              const StatIcon = stat.icon;
+              return (
+                <div key={stat.label} className="flex items-start gap-3">
+                  <div className="mt-0.5 w-8 h-8 rounded-xl bg-white/[0.03] border border-white/5 text-white/55 flex items-center justify-center shrink-0">
+                    <StatIcon className="w-4 h-4" />
                   </div>
-
-                  {/* HIGH-FIDELITY INTERACTIVE LOGISTICS SIMULATOR */}
-                  <div className="mt-8 liquid-glass p-6 md:p-8 rounded-[28px] border border-white/5 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-400/5 blur-[80px] rounded-full pointer-events-none" />
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-400/5 blur-[80px] rounded-full pointer-events-none" />
-
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-white/5">
-                      <div>
-                        <span className="px-2.5 py-0.5 text-[9px] font-mono text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 rounded-full tracking-widest uppercase mb-1.5 inline-block">
-                          ACTIVE INTERACTIVE LABORATORY
-                        </span>
-                        <h3 className="text-xl md:text-2xl font-semibold text-white tracking-tight font-display">
-                          Wanderful Tactical Advisor Simulator
-                        </h3>
-                        <p className="text-xs text-white/50 font-sans mt-1">
-                          Slide, toggle, and simulate active physical terrain limits to view instant packing recommendations.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pt-6">
-                      
-                      {/* Left: Interactive Controls */}
-                      <div className="md:col-span-6 space-y-6">
-                        <div>
-                          <label className="text-[10px] font-mono tracking-widest text-white/40 uppercase block font-semibold mb-3">
-                            1. Select Terrain Environment
-                          </label>
-                          <div className="grid grid-cols-3 gap-2.5">
-                            {[
-                              { id: "urban", label: "Metropolitan", desc: "Sidewalks & Shops", emoji: "🏢" },
-                              { id: "alpine", label: "Alpine Highs", desc: "Cliffs & Ridges", emoji: "🏔️" },
-                              { id: "volcanic", label: "Extreme/Volcanic", desc: "Tectonic Basalt", emoji: "🌋" }
-                            ].map((terrain) => (
-                              <button
-                                key={terrain.id}
-                                onClick={() => setSimTerrain(terrain.id as any)}
-                                className={`p-3 rounded-xl border text-left transition-all duration-300 cursor-pointer ${
-                                  simTerrain === terrain.id
-                                    ? "bg-cyan-500/10 border-cyan-400/50 text-cyan-200 shadow-[0_0_15px_rgba(34,211,238,0.15)]"
-                                    : "bg-white/[0.01] border-white/5 text-white/60 hover:bg-white/[0.04] hover:border-white/10"
-                                }`}
-                              >
-                                <span className="text-lg block mb-1">{terrain.emoji}</span>
-                                <span className="text-xs font-semibold block">{terrain.label}</span>
-                                <span className="text-[9px] text-white/40 block leading-tight mt-0.5">{terrain.desc}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="text-[10px] font-mono tracking-widest text-white/40 uppercase block font-semibold mb-3">
-                            2. Select Passage Pace style
-                          </label>
-                          <div className="grid grid-cols-3 gap-2.5">
-                            {[
-                              { id: "meditative", label: "Zen Meditation", desc: "Slow & Conscious", emoji: "🧘" },
-                              { id: "discovery", label: "Active Exploration", desc: "Balanced Strides", emoji: "🚶" },
-                              { id: "endurance", label: "High Endurance", desc: "Peak Performance", emoji: "🏃" }
-                            ].map((pace) => (
-                              <button
-                                key={pace.id}
-                                onClick={() => setSimPace(pace.id as any)}
-                                className={`p-3 rounded-xl border text-left transition-all duration-300 cursor-pointer ${
-                                  simPace === pace.id
-                                    ? "bg-purple-500/10 border-purple-400/50 text-purple-200 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
-                                    : "bg-white/[0.01] border-white/5 text-white/60 hover:bg-white/[0.04] hover:border-white/10"
-                                }`}
-                              >
-                                <span className="text-lg block mb-1">{pace.emoji}</span>
-                                <span className="text-xs font-semibold block">{pace.label}</span>
-                                <span className="text-[9px] text-white/40 block leading-tight mt-0.5">{pace.desc}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right: Simulated Calculations Feedback */}
-                      <div className="md:col-span-6 bg-white/[0.01] border border-white/5 rounded-2xl p-5 space-y-4">
-                        <span className="text-[10px] font-mono tracking-widest text-white/30 uppercase block font-semibold mb-1">
-                          LOGISTICS COMPILER FEEDBACK
-                        </span>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          
-                          <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-                            <span className="text-[9px] font-mono text-cyan-400 uppercase tracking-widest block font-semibold">
-                              LUG DEPTH METRIC
-                            </span>
-                            <span className="text-sm font-semibold text-white block mt-1">
-                              {simTerrain === "urban" && "Flat Comfort Soles (0mm)"}
-                              {simTerrain === "alpine" && "Multi-Lug Grip (4.5mm)"}
-                              {simTerrain === "volcanic" && "Vulcanized Basalt Steel (6.5mm)"}
-                            </span>
-                            <p className="text-[10px] text-white/40 mt-0.5 leading-snug">
-                              {simTerrain === "urban" && "Optimized for city marble and asphalt transitions."}
-                              {simTerrain === "alpine" && "Prevents slip risks on active high mossy soil zones."}
-                              {simTerrain === "volcanic" && "Engineered to withstand heavy sub-tectonic heat."}
-                            </p>
-                          </div>
-
-                          <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-                            <span className="text-[9px] font-mono text-purple-400 uppercase tracking-widest block font-semibold">
-                              THERMAL RATING
-                            </span>
-                            <span className="text-sm font-semibold text-white block mt-1">
-                              {simTerrain === "urban" && "Single-Layer Breathability"}
-                              {simTerrain === "alpine" && "Triple-Layer Insulation"}
-                              {simTerrain === "volcanic" && "Extreme Gore-Tex Shell"}
-                            </span>
-                            <p className="text-[10px] text-white/40 mt-0.5 leading-snug">
-                              {simTerrain === "urban" && "Unstructured organic cotton layers highly advised."}
-                              {simTerrain === "alpine" && "Moisture-wicking, organic merino fleece system."}
-                              {simTerrain === "volcanic" && "Full tactical defense against acid rain and gales."}
-                            </p>
-                          </div>
-
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-
-                          <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-                            <span className="text-[9px] font-mono text-emerald-400 uppercase tracking-widest block font-semibold">
-                              RECOMMENDED HYDRATION
-                            </span>
-                            <span className="text-sm font-semibold text-white block mt-1">
-                              {simPace === "meditative" && "1.5 Liters / Day"}
-                              {simPace === "discovery" && "2.5 Liters / Day"}
-                              {simPace === "endurance" && "4.0 Liters + Salts"}
-                            </span>
-                            <p className="text-[10px] text-white/40 mt-0.5 leading-snug">
-                              {simPace === "meditative" && "Sip slow organic leaf matches to preserve zen."}
-                              {simPace === "discovery" && "Drink balanced electrolyte streams under moderate heats."}
-                              {simPace === "endurance" && "High level active intake required to mitigate deep fatigue."}
-                            </p>
-                          </div>
-
-                          <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-                            <span className="text-[9px] font-mono text-amber-400 uppercase tracking-widest block font-semibold">
-                              COGNITIVE SAFETY ADVISORY
-                            </span>
-                            <span className="text-sm font-semibold text-white block mt-1">
-                              {simPace === "meditative" && "High Serotonin Sync"}
-                              {simPace === "discovery" && "Balanced Active Sync"}
-                              {simPace === "endurance" && "Acclimatize Extensively"}
-                            </span>
-                            <p className="text-[10px] text-white/40 mt-0.5 leading-snug">
-                              {simPace === "meditative" && "Very peaceful state. Highly resilient heart rhythms."}
-                              {simPace === "discovery" && "Sensory details are easily registered and memorized."}
-                              {simPace === "endurance" && "Take intensive breaks every 90 minutes to recharge."}
-                            </p>
-                          </div>
-
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {/* DETAILED SPECS ACCORDION */}
-                  <div className="mt-8 liquid-glass p-6 rounded-[24px] border border-white/5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/5">
-                      <div>
-                        <h4 className="text-xs font-mono tracking-widest text-cyan-400 uppercase">
-                          System Capabilities & Privacy Policy
-                        </h4>
-                        <p className="text-[11px] text-white/40 mt-0.5 font-mono">
-                          Active operational metrics as of June 2026
-                        </p>
-                      </div>
-                      <div className="flex gap-4 text-xs font-mono">
-                        <div>
-                          <span className="text-white/40 block text-[9px] uppercase">Latency</span>
-                          <span className="text-cyan-400 font-semibold">&lt; 14.5s average</span>
-                        </div>
-                        <div>
-                          <span className="text-white/40 block text-[9px] uppercase">Accuracy</span>
-                          <span className="text-purple-400 font-semibold">99.8% Geo-Match</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 text-[11px] text-white/60 leading-relaxed font-sans">
-                      <div>
-                        <p className="mb-3">
-                          <strong className="text-white font-mono block mb-1">ZERO DATA TRACKING</strong>
-                          We believe travel is deeply private. Your budget limits, starting points, and planned coordinates are never cached or analyzed. Any private keys you assign remain inside your native browser storage layers.
-                        </p>
-                      </div>
-                      <div>
-                        <p className="mb-3">
-                          <strong className="text-white font-mono block mb-1">LOCAL COGNITIVE CACHING</strong>
-                          Wanderful caches OSM raster map layers dynamic bounding coordinates locally. This delivers lightning-fast pan scales and reduces battery draw during remote adventures.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-10 flex justify-center">
-                    <button
-                      onClick={() => navigateTo("/")}
-                      className="px-6 py-2.5 bg-white text-black font-semibold text-xs rounded-full hover:scale-105 active:scale-95 transition-all font-mono tracking-wider cursor-pointer uppercase"
-                    >
-                      Initialize Search Matrix
-                    </button>
+                  <div>
+                    <span className="text-[9px] text-white/35 font-mono tracking-widest uppercase block">
+                      {stat.label}
+                    </span>
+                    <span className="text-sm text-white font-semibold block mt-1">
+                      {stat.value}
+                    </span>
                   </div>
                 </div>
-    </>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <div className="mt-10 flex justify-center">
+        <button
+          type="button"
+          onClick={() => navigateTo("/")}
+          className="px-6 py-2.5 bg-white text-black font-semibold text-xs rounded-full hover:scale-105 active:scale-95 transition-all font-mono tracking-wider cursor-pointer uppercase inline-flex items-center gap-2"
+        >
+          Start planning
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
   );
 }
