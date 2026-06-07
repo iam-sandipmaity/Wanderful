@@ -13,7 +13,7 @@ import {
   Coins,
   Compass,
   Cpu,
-  DollarSign,
+  IndianRupee,
   Eye,
   Layers,
   Loader2,
@@ -32,6 +32,36 @@ import VerticalTimeline from "../components/VerticalTimeline";
 import { downloadItineraryIcs } from "../services/calendar";
 import { describeWeatherCode, fetchWeatherForecast, WeatherForecast } from "../services/weather";
 import { useWanderful } from "../state/WanderfulContext";
+
+function formatAverageCostPerDay(totalCost: string, days: number) {
+  const safeDays = Math.max(days || 1, 1);
+  const match = totalCost.match(/\d[\d,]*(?:\.\d+)?/);
+
+  if (!match || match.index === undefined) {
+    return null;
+  }
+
+  const numericTotal = Number(match[0].replace(/,/g, ""));
+  if (!Number.isFinite(numericTotal)) {
+    return null;
+  }
+
+  const average = Math.round(numericTotal / safeDays);
+  const formattedAverage = average.toLocaleString("en-US");
+  const prefix = totalCost.slice(0, match.index).trim();
+  const suffix = totalCost.slice(match.index + match[0].length).trim();
+
+  if (prefix) {
+    const separator = /[A-Za-z]$/.test(prefix) ? " " : "";
+    return `${prefix}${separator}${formattedAverage}/day`;
+  }
+
+  if (suffix) {
+    return `${formattedAverage} ${suffix}/day`;
+  }
+
+  return `${formattedAverage}/day`;
+}
 
 export default function TripPage() {
   const {
@@ -92,10 +122,12 @@ export default function TripPage() {
   const plannedPercent = Math.min(100, Math.round((plannedDays / totalDays) * 100));
   const activeProgressPercent = Math.min(100, Math.round(((activeDayIdx + 1) / totalDays) * 100));
   const activeWeather = weatherForecast?.days[activeDayIdx] || weatherForecast?.days[0];
+  const averageCostPerDay = formatAverageCostPerDay(itinerary.estimatedTotalCost, totalDays);
   const budgetItems = [
     {
       label: "Stays & Lodges",
       value: itinerary.budgetBreakdown?.stays || "Included in estimate",
+      average: formatAverageCostPerDay(itinerary.budgetBreakdown?.stays || "", totalDays),
       note: "Hotels, homestays, and nightly base",
       icon: BedDouble,
       accent: "text-cyan-300 border-cyan-400/20 bg-cyan-400/10"
@@ -103,6 +135,7 @@ export default function TripPage() {
     {
       label: "Transit",
       value: itinerary.budgetBreakdown?.transport || "Included in estimate",
+      average: formatAverageCostPerDay(itinerary.budgetBreakdown?.transport || "", totalDays),
       note: "Local transfers, taxis, trains, and route access",
       icon: Bus,
       accent: "text-purple-300 border-purple-400/20 bg-purple-400/10"
@@ -110,6 +143,7 @@ export default function TripPage() {
     {
       label: "Dining",
       value: itinerary.budgetBreakdown?.food || "Included in estimate",
+      average: formatAverageCostPerDay(itinerary.budgetBreakdown?.food || "", totalDays),
       note: "Meals, snacks, tastings, and cafe stops",
       icon: Utensils,
       accent: "text-emerald-300 border-emerald-400/20 bg-emerald-400/10"
@@ -117,6 +151,7 @@ export default function TripPage() {
     {
       label: "Activities",
       value: itinerary.budgetBreakdown?.activities || "Included in estimate",
+      average: formatAverageCostPerDay(itinerary.budgetBreakdown?.activities || "", totalDays),
       note: "Tickets, guides, fees, and booked experiences",
       icon: TicketCheck,
       accent: "text-amber-300 border-amber-400/20 bg-amber-400/10"
@@ -344,7 +379,7 @@ export default function TripPage() {
                     <div className="flex items-start justify-between gap-4 border-b border-white/5 pb-4 mb-4">
                       <div>
                         <h4 className="text-[10px] font-mono tracking-[0.14em] text-emerald-400 uppercase flex items-center gap-2">
-                          <DollarSign className="w-3.5 h-3.5" />
+                          <IndianRupee className="w-3.5 h-3.5" />
                           Estimated Breakdown
                         </h4>
                         <p className="text-[10px] text-white/40 font-mono mt-1">
@@ -358,6 +393,11 @@ export default function TripPage() {
                         <span className="block text-lg font-bold text-emerald-300 font-mono leading-tight">
                           {itinerary.estimatedTotalCost}
                         </span>
+                        {averageCostPerDay && (
+                          <span className="mt-1 inline-flex items-center justify-end rounded-full bg-emerald-400/10 border border-emerald-400/15 px-2 py-0.5 text-[9px] font-mono text-emerald-200 tracking-wider uppercase">
+                            Avg {averageCostPerDay}
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -380,6 +420,11 @@ export default function TripPage() {
                             <span className="text-sm font-semibold text-white font-mono leading-snug">
                               {item.value}
                             </span>
+                            {item.average && (
+                              <span className="mt-2 w-fit rounded-full bg-white/[0.04] border border-white/10 px-2 py-0.5 text-[9px] font-mono text-white/55 tracking-wider uppercase">
+                                Avg {item.average}
+                              </span>
+                            )}
                             <span className="text-[10px] text-white/38 leading-snug mt-2">
                               {item.note}
                             </span>
