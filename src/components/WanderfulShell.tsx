@@ -37,7 +37,6 @@ import HowItWorksPage from "../pages/HowItWorksPage";
 import ItinerariesPage from "../pages/ItinerariesPage";
 import GuidesPage from "../pages/GuidesPage";
 import TripPage from "../pages/TripPage";
-import { PRE_CURATED_ITINERARIES, TRAVEL_GUIDES } from "../data";
 import gsap from "gsap";
 import MapView from "../components/MapView";
 import VerticalTimeline from "../components/VerticalTimeline";

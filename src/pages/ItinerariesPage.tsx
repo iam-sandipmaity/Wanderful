@@ -16,8 +16,8 @@ import {
   X,
   type LucideIcon
 } from "lucide-react";
-import { PRE_CURATED_ITINERARIES } from "../data";
 import { useWanderful } from "../state/WanderfulContext";
+import type { Itinerary } from "../types";
 
 const styleFilters = ["All", "Luxury", "Adventure", "Relaxed", "Food"];
 const regionFilters = ["All", "Europe", "Asia", "Americas", "Africa", "Oceania"];
@@ -123,6 +123,9 @@ function getItineraryRegion(destination: string) {
 
 export default function ItinerariesPage() {
   const [activeRegion, setActiveRegion] = useState("All");
+  const [archiveError, setArchiveError] = useState<string | null>(null);
+  const [curatedItineraries, setCuratedItineraries] = useState<Itinerary[]>([]);
+  const [isArchiveLoading, setIsArchiveLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const {
     curatedSearch,
@@ -133,11 +136,31 @@ export default function ItinerariesPage() {
   } = useWanderful();
 
   useEffect(() => {
+    let isMounted = true;
+
+    import("../curatedItineraries")
+      .then((module) => {
+        if (!isMounted) return;
+        setCuratedItineraries(module.PRE_CURATED_ITINERARIES);
+        setIsArchiveLoading(false);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setArchiveError("Route archive could not be loaded.");
+        setIsArchiveLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
     setVisibleCount(PAGE_SIZE);
   }, [activeRegion, curatedSearch, curatedStyle]);
 
   const filteredCuratedList = useMemo(() => {
-    return PRE_CURATED_ITINERARIES.filter((item) => {
+    return curatedItineraries.filter((item) => {
       const query = curatedSearch.toLowerCase();
       const region = getItineraryRegion(item.destination);
       const matchesStyle = curatedStyle === "All" || item.travelStyle === curatedStyle;
@@ -150,7 +173,7 @@ export default function ItinerariesPage() {
 
       return matchesStyle && matchesRegion && matchesSearch;
     });
-  }, [activeRegion, curatedSearch, curatedStyle]);
+  }, [activeRegion, curatedItineraries, curatedSearch, curatedStyle]);
 
   const visibleCuratedList = filteredCuratedList.slice(0, visibleCount);
   const hasMoreRoutes = visibleCount < filteredCuratedList.length;
@@ -243,7 +266,25 @@ export default function ItinerariesPage() {
         </div>
       </section>
 
-      {filteredCuratedList.length === 0 ? (
+      {isArchiveLoading ? (
+        <section className="w-full text-center py-16 px-4 rounded-[28px] bg-white/[0.01] border border-white/5 text-white/40">
+          <div className="mx-auto w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-purple-300">
+            <Sparkles className="w-5 h-5 animate-pulse" />
+          </div>
+          <p className="mt-4 text-xs tracking-widest uppercase font-mono">
+            Loading route archive
+          </p>
+        </section>
+      ) : archiveError ? (
+        <section className="w-full text-center py-16 px-4 rounded-[28px] bg-white/[0.01] border border-white/5 text-white/40">
+          <div className="mx-auto w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-purple-300">
+            <Search className="w-5 h-5" />
+          </div>
+          <p className="mt-4 text-xs tracking-widest uppercase font-mono">
+            {archiveError}
+          </p>
+        </section>
+      ) : filteredCuratedList.length === 0 ? (
         <section className="w-full text-center py-16 px-4 rounded-[28px] bg-white/[0.01] border border-white/5 text-white/40">
           <div className="mx-auto w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-purple-300">
             <Search className="w-5 h-5" />
